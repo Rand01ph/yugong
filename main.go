@@ -2,6 +2,7 @@ package main
 
 import (
     "encoding/json"
+    "flag"
     "fmt"
     "net/http"
     "strings"
@@ -9,6 +10,18 @@ import (
 
     "github.com/sirupsen/logrus"
 )
+
+var (
+    startID int
+    endID int
+    apiURL string
+)
+
+func init() {
+    flag.IntVar(&startID, "start_id", 0, "起始ID")
+    flag.IntVar(&endID, "end_id", 0, "结束ID")
+    flag.StringVar(&apiURL, "api", "", "接口URL")
+}
 
 type Pool struct {
     Tasks []*Task
@@ -64,18 +77,18 @@ type fooReturn struct {
     Module  string `json:"module"`
 }
 
+
 func main() {
-    var mailID = [2]int{1000, 10001}
-    fmt.Printf("mail count is %d\n", len(mailID))
+    flag.Parse()
+    fmt.Printf("mail count is %d\n", endID-startID+1)
     var tasks []*Task
-    for _, i := range mailID {
+    for i := startID; i <= endID; i++ {
         j := i
         tasks = append(tasks, newTask(func() error {
-            url := "aaaaa"
             payload := strings.NewReader(fmt.Sprintf("{\n\t\"relanch_id\": %d\n}", j))
-            req, _ := http.NewRequest("POST", url, payload)
+            req, _ := http.NewRequest("POST", apiURL, payload)
             req.Header.Add("content-type", "application/json")
-            res, err := http.DefaultClient.Do(req);
+            res, err := http.DefaultClient.Do(req)
             if err != nil {
                 return fmt.Errorf("relanch error for %d err is %v", j, err)
             }
